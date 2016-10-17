@@ -45,13 +45,6 @@ GEOMETRY_GIT_UNPUSHED=$GEOMETRY_SYMBOL_GIT_UNPUSHED
 GEOMETRY_EXIT_VALUE=$(prompt_geometry_colorize $GEOMETRY_COLOR_EXIT_VALUE $GEOMETRY_SYMBOL_EXIT_VALUE)
 GEOMETRY_PROMPT=$(prompt_geometry_colorize $GEOMETRY_COLOR_PROMPT $GEOMETRY_SYMBOL_PROMPT)
 
-# Flags
-PROMPT_GEOMETRY_GIT_CONFLICTS=${PROMPT_GEOMETRY_GIT_CONFLICTS:-false}
-PROMPT_GEOMETRY_GIT_TIME=${PROMPT_GEOMETRY_GIT_TIME:-true}
-PROMPT_GEOMETRY_COLORIZE_SYMBOL=${PROMPT_GEOMETRY_COLORIZE_SYMBOL:-false}
-PROMPT_GEOMETRY_COLORIZE_ROOT=${PROMPT_GEOMETRY_COLORIZE_ROOT:-false}
-PROMPT_VIRTUALENV_ENABLED=${PROMPT_VIRTUALENV_ENABLED:-false}
-
 # Use ag if possible
 GREP=$(command -v ag >/dev/null 2>&1 && echo "ag" || echo "grep")
 
@@ -93,7 +86,7 @@ prompt_geometry_git_branch() {
 }
 
 prompt_geometry_virtualenv() {
-  if test ! -z $VIRTUAL_ENV && $PROMPT_VIRTUALENV_ENABLED; then
+  if test ! -z $VIRTUAL_ENV; then
     ref=$(basename $VIRTUAL_ENV) || return
     echo "$(prompt_geometry_colorize $GEOMETRY_COLOR_VIRTUALENV "(${ref})") "
   fi
@@ -171,14 +164,6 @@ prompt_geometry_git_conflicts() {
 
 prompt_geometry_git_info() {
   if git rev-parse --git-dir > /dev/null 2>&1; then
-    if $PROMPT_GEOMETRY_GIT_CONFLICTS ; then
-      conflicts="$(prompt_geometry_git_conflicts)"
-    fi
-
-    if $PROMPT_GEOMETRY_GIT_TIME; then
-      time=" $(prompt_geometry_git_time_since_commit) ::"
-    fi
-
     echo "$(prompt_geometry_git_symbol) $(prompt_geometry_git_branch) $conflicts::$time $(prompt_geometry_git_status)"
   fi
 }
@@ -234,15 +219,6 @@ prompt_geometry_render() {
 
 prompt_geometry_setup() {
   autoload -U add-zsh-hook
-
-  if $PROMPT_GEOMETRY_COLORIZE_SYMBOL; then
-    export GEOMETRY_COLOR_PROMPT=$(prompt_geometry_hash_color $HOST)
-    export GEOMETRY_PROMPT=$(prompt_geometry_colorize $GEOMETRY_COLOR_PROMPT $GEOMETRY_SYMBOL_PROMPT)
-  fi
-
-  if $PROMPT_GEOMETRY_COLORIZE_ROOT && [[ $UID == 0 || $EUID == 0 ]]; then
-    export GEOMETRY_PROMPT=$(prompt_geometry_colorize $GEOMETRY_COLOR_ROOT $GEOMETRY_SYMBOL_ROOT)
-  fi
 
   add-zsh-hook preexec prompt_geometry_set_cmd_title
   add-zsh-hook precmd prompt_geometry_set_title
